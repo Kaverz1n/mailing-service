@@ -1,0 +1,66 @@
+{% extends 'mailings/base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        {% if object.status.name == 'завершена' %}
+            <h1 class="mt-2 text-center">РАССЫЛКА(ЗАВЕРШЕНА)</h1>
+            <div class="card mt-2">
+                <h1 class="text-muted p-1">{{ object.title|upper }}</h1>
+                <hr>
+                <p class="text-muted">{{ object.body }} </p>
+                <hr>
+                <p class="text-muted"><b>Переодичность: </b>{{ object.regularity }}</p>
+                <p class="text-muted"><b>Время отправки: </b>{{ object.sending_time }}</p>
+                <div class="col-5 mb-3">
+                    <div class="row">
+                        <div class="col-2">
+                            <a href="{% url 'mailings:mailing_delete' object.slug %}"
+                               class="btn btn-danger">УДАЛИТЬ</a>
+                        </div>
+                        <div class="col-2">
+                            <a href="{% url 'mailings:mailing_list' %}" class="btn btn-success ms-5">НАЗАД</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <h1 class="mt-2 text-center">РАССЫЛКА</h1>
+            <div class="card mt-2">
+                <h1 class="p-1">{{ object.title|upper }}</h1>
+                <hr>
+                <p>{{ object.body }} </p>
+                <hr>
+                <p><b>Переодичность: </b>{{ object.regularity }}</p>
+                <p><b>Время отправки: </b>{{ object.sending_time }}</p>
+                <div class="col-5 mb-3">
+                    <div class="row">
+                        {% if object.status.name == 'создана' %}
+                            <div class="col-3">
+                                <a href="{% url 'mailings:mailing_update' object.slug %}" class="btn btn-primary ">РЕДАКТИРОВАТЬ</a>
+                            </div>
+                            <div class="col-2">
+                                <a href="{% url 'mailings:mailing_delete' object.slug %}"
+                                   class="btn btn-danger ms-3 ">УДАЛИТЬ</a>
+                            </div>
+                            <div class="col-2">
+                                <a href="{% url 'mailings:mailing_list' %}" class="btn btn-success ms-5">НАЗАД</a>
+                            </div>
+                        {% else %}
+                            <div class="col-2">
+                                <a href="{% url 'mailings:mailing_delete' object.slug %}"
+                                   class="btn btn-danger">УДАЛИТЬ</a>
+                            </div>
+                            <div class="col-2">
+                                <a href="{% url 'mailings:mailing_list' %}" class="btn btn-success ms-5">НАЗАД</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
