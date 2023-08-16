@@ -5,7 +5,7 @@
     <div class="row">
         <form method="post" class="card">
             {% csrf_token %}
-            <h2>Вы действительно хотите удалить рассылку "{{ object.title }}"?</h2>
+            <h2>Вы действительно хотите удалить рассылку "{{ object.title|upper }}"?</h2>
             <div class="row mt-1 mb-2">
                 <div class="col-1 ">
                     <button class="btn btn-danger" type="submit">УДАЛИТЬ</button>
