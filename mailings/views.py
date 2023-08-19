@@ -1,12 +1,14 @@
 from typing import Any
 
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import (
     TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
 )
 from pytils.translit import slugify
 
-from mailings.models import Mailing
+from mailings.models import Mailing, MailingStatus
 
 
 class IndexView(TemplateView):
@@ -87,3 +89,17 @@ class MailingDeleteView(DeleteView):
     '''
     model = Mailing
     success_url = reverse_lazy('mailings:mailing_list')
+
+
+def change_status(request, slug) -> HttpResponse:
+    '''
+    Переводит рассылку к типу "завершена"
+    '''
+    object_id = Mailing.objects.get(slug=slug).pk
+    object = get_object_or_404(Mailing, pk=object_id)
+    if request.method == 'POST':
+        object.status = MailingStatus.objects.get(name='завершена')
+        object.save()
+        return redirect('mailings:mailing_list')
+
+    return render(request, 'mailings/mailing_status_change.html', {'object': object})
