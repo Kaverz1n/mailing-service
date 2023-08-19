@@ -19,7 +19,11 @@
                                 <h5 class="card-title">{{ object.title|upper }}</h5>
                                 <p class="card-text text-start">{{ object.body|slice:":100" }}...</p>
                                 <p class="card-text text-start"><b>Время отправки: </b>{{ object.sending_time }}</p>
-                                <p class="card-text text-start"><b>Переодичность: </b>{{ object.regularity }}</p>
+                                {% if object.regularity %}
+                                    <p class="card-text text-start"><b>Переодичность: </b>{{ object.regularity }}</p>
+                                {% else %}
+                                    <p class="card-text text-start"><b>Переодичность: </b>Не указана</p>
+                                {% endif %}
                                 <div class="row">
                                     <div class="col-5">
                                         <a href="{% url 'mailings:mailing_update' object.slug %}"
@@ -44,7 +48,7 @@
         {% for object in object_list %}
             {% if object.status.name == "запущена" %}
                 <div class="col-sm-4 mb-3 mb-sm-0 ">
-                    <div class="card">
+                    <div class="card mt-2">
                         <a href="{% url 'mailings:mailing_detail' object.slug %}"
                            class="link-dark">
                             <div class="card-body mt-2">
@@ -54,8 +58,8 @@
                                 <p class="card-text text-start"><b>Переодичность: </b>{{ object.regularity }}</p>
                                 <div class="row">
                                     <div class="col-2">
-                                        <a href="{% url 'mailings:mailing_delete' object.slug %}"
-                                           class="btn btn-danger mt-2 ">УДАЛИТЬ</a>
+                                        <a href="{% url 'mailings:mailing_status' object.slug %}"
+                                           class="btn btn-danger mt-2 ">ЗАВЕРШИТЬ</a>
                                     </div>
                                 </div>
                             </div>
@@ -80,11 +84,14 @@
                             <div class="card-body">
                                 <h5 class="card-title text-muted">{{ object.title|upper }}</h5>
                                 <p class="card-text text-start text-muted">{{ object.body|slice:":100" }}...</p>
-                                <p class="card-text text-start text-muted"><b>Время отправки: </b>{{ object.sending_time
-                                    }}
+                                <p class="card-text text-start text-muted"><b>Время отправки:
+                                </b>{{ object.sending_time }}
                                 </p>
-                                <p class="card-text text-start text-muted"><b>Переодичность: </b>{{ object.regularity }}
-                                </p>
+                                {% if object.regularity %}
+                                    <p class="card-text text-start text-muted"><b>Переодичность: </b>{{ object.regularity }}</p>
+                                {% else %}
+                                    <p class="card-text text-start text-muted"><b>Переодичность: </b>Не указана</p>
+                                {% endif %}
                                 <div class="row">
                                     <div class="col-2">
                                         <a href="{% url 'mailings:mailing_delete' object.slug %}"
