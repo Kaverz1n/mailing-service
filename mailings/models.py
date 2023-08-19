@@ -75,11 +75,11 @@ class MailingLogs(models.Model):
     '''
     mailing = models.ForeignKey(Mailing, on_delete=models.CASCADE, verbose_name='Рассылка')
     attempt_datetime = models.DateTimeField(default=timezone.now, verbose_name='Последняя попытка')
-    status = models.CharField(max_length=100, verbose_name='Статус попытки')
+    status = models.BooleanField(default=True, verbose_name='Статус попытки', **NULLABLE)
     server_response = models.TextField(verbose_name='Ответ сервера', **NULLABLE)
 
     def __str__(self):
-        return f'{self.mailing.name} - {self.status}'
+        return f'{self.mailing.title} - {self.status}'
 
     class Meta:
         verbose_name = 'лог рассылки'
