@@ -1,0 +1,23 @@
+{% extends 'mailings/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <form method="post" class="card">
+            {% csrf_token %}
+            <h2>Вы действительно хотите перевести рассылку "{{ object.title|upper }}" в завершенные?</h2>
+            <p class="mb-3 fw-semibold lh-1 mt-3">Вы не сможете вновь её активировать...</p>
+            <div class="row mt-1 mb-2">
+                <div class="col-1 ">
+                    <button type="submit" class="btn btn-danger">
+                            ПЕРЕВЕСТИ
+                    </button>
+                </div>
+                <div class="col-1 ms-2">
+                    <a class="btn btn-primary" href="{% url 'mailings:mailing_list' %}">НАЗАД</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
