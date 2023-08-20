@@ -8,7 +8,7 @@ from django.views.generic import (
 )
 from pytils.translit import slugify
 
-from mailings.models import Mailing, MailingStatus
+from mailings.models import Mailing, MailingStatus, Client
 
 
 class IndexView(TemplateView):
@@ -65,6 +65,12 @@ class MailingCreateView(CreateView):
 
         return super().form_valid(form)
 
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Создание рассылки'
+
+        return context
+
 
 class MailingUpdateView(UpdateView):
     '''
@@ -82,6 +88,12 @@ class MailingUpdateView(UpdateView):
 
         return super().form_valid(form)
 
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Редактирование рассылки {self.object.title}'
+
+        return context
+
 
 class MailingDeleteView(DeleteView):
     '''
@@ -89,6 +101,12 @@ class MailingDeleteView(DeleteView):
     '''
     model = Mailing
     success_url = reverse_lazy('mailings:mailing_list')
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Удаление рассылки {self.object.title}'
+
+        return context
 
 
 def change_status(request, slug) -> HttpResponse:
@@ -102,4 +120,74 @@ def change_status(request, slug) -> HttpResponse:
         object.save()
         return redirect('mailings:mailing_list')
 
-    return render(request, 'mailings/mailing_status_change.html', {'object': object})
+    return render(request, 'mailings/mailing_status_change.html', {'object': object, 'title': 'Подтверждение'})
+
+
+class ClientListView(ListView):
+    '''
+    Класс для отображения всех клиентов
+    '''
+    model = Client
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Клиенты'
+
+        return context
+
+
+class ClientDetailView(DetailView):
+    '''
+    Класс для отображения одного клиента
+    '''
+    model = Client
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = self.object.fullname
+
+        return context
+
+
+class ClientCreateView(CreateView):
+    '''
+    Класс для создания клиента
+    '''
+    model = Client
+    fields = ('fullname', 'email', 'comment',)
+    success_url = reverse_lazy('mailings:client_list')
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Создание клиента'
+
+        return context
+
+
+class ClientUpdateView(UpdateView):
+    '''
+    Класс для обновления клиента
+    '''
+    model = Client
+    fields = ('fullname', 'email', 'comment',)
+    success_url = reverse_lazy('mailings:client_list')
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Редактирование клиента {self.object.fullname}'
+
+        return context
+
+
+class ClientDeleteView(DeleteView):
+    '''
+    Класс для удаления клиента
+    '''
+    model = Client
+    success_url = reverse_lazy('mailings:client_list')
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Удаление клиента {self.object.fullname}'
+
+        return context
