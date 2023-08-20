@@ -11,7 +11,7 @@
                 <hr>
                 <p class="text-muted">{{ object.body }} </p>
                 <hr>
-                <p class="text-muted"><b>Переодичность: </b>{{ object.regularity }}</p>
+                <p class="text-muted"><b>Периодичность: </b>{{ object.regularity }}</p>
                 <p class="text-muted"><b>Время отправки: </b>{{ object.sending_time }}</p>
                 <div class="col-5 mb-3">
                     <div class="row">
@@ -49,8 +49,8 @@
                             </div>
                         {% else %}
                             <div class="col-2">
-                                <a href="{% url 'mailings:mailing_delete' object.slug %}"
-                                   class="btn btn-danger">УДАЛИТЬ</a>
+                                <a href="{% url 'mailings:mailing_status' object.slug %}"
+                                   class="btn btn-danger">ЗАВЕРШИТЬ</a>
                             </div>
                             <div class="col-2">
                                 <a href="{% url 'mailings:mailing_list' %}" class="btn btn-success ms-5">НАЗАД</a>
