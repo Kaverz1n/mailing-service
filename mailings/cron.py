@@ -5,7 +5,7 @@ from mailing_service.settings import EMAIL_HOST_USER
 from django.core.mail import send_mail
 from django.db.models import Q
 
-from mailings.models import Mailing, MailingStatus, MailingLogs, MailingRegularity
+from mailings.models import Mailing, MailingStatus, MailingLogs, MailingRegularity, Client
 
 
 def send_email():
@@ -25,13 +25,14 @@ def send_email():
         Q(status=MailingStatus.objects.get(name='запущена'))
     )
     admin_email = EMAIL_HOST_USER
+    users_email_list = [str(client.email) for client in Client.objects.all()]
 
     # перебор всех рассылок со статусом "создана" или "запущена"
     for mailing in mailings:
         try:
             # отправка e-mail рассылки, если настоящее время больше установленного для отправки
             if mailing.sending_time.timestamp() < now.timestamp():
-                send_mail(mailing.title, mailing.body, admin_email, ['kaptan.alex@yandex.ru'],
+                send_mail(mailing.title, mailing.body, admin_email, users_email_list,
                           fail_silently=False)
                 MailingLogs.objects.create(mailing=mailing)
 
