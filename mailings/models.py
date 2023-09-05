@@ -12,7 +12,7 @@ class Client(models.Model):
     email = models.EmailField(max_length=254, verbose_name='E-mail', unique=True)
     comment = models.TextField(verbose_name='Комментарий', **NULLABLE)
 
-    def str(self):
+    def str(self) -> str:
         return f'{self.email}'
 
     class Meta:
@@ -26,7 +26,7 @@ class MailingRegularity(models.Model):
     '''
     name = models.CharField(max_length=50, verbose_name='Переодичность', unique=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.name}'
 
     class Meta:
@@ -40,7 +40,7 @@ class MailingStatus(models.Model):
     '''
     name = models.CharField(max_length=50, verbose_name='Статус', unique=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.name}'
 
     class Meta:
@@ -61,7 +61,7 @@ class Mailing(models.Model):
     status = models.ForeignKey(MailingStatus, on_delete=models.CASCADE, verbose_name='Статус',
                                default=MailingStatus.objects.get(name='создана').pk)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.title}'
 
     class Meta:
@@ -76,9 +76,9 @@ class MailingLogs(models.Model):
     mailing = models.ForeignKey(Mailing, on_delete=models.CASCADE, verbose_name='Рассылка')
     attempt_datetime = models.DateTimeField(default=timezone.now, verbose_name='Последняя попытка')
     status = models.BooleanField(default=True, verbose_name='Статус попытки', **NULLABLE)
-    server_response = models.TextField(verbose_name='Ответ сервера', **NULLABLE)
+    server_response = models.TextField(verbose_name='Ответ сервера', default='OK')
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.mailing.title} - {self.status}'
 
     class Meta:
