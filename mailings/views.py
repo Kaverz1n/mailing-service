@@ -8,7 +8,8 @@ from django.views.generic import (
 )
 from pytils.translit import slugify
 
-from mailings.models import Mailing, MailingStatus, Client
+from mailings.forms import MailingForm, ClientForm
+from mailings.models import Mailing, MailingStatus, Client, MailingLogs
 
 
 class IndexView(TemplateView):
@@ -54,14 +55,14 @@ class MailingCreateView(CreateView):
     Класс для создания рассылки
     '''
     model = Mailing
-    fields = ('title', 'body', 'sending_time', 'regularity',)
+    form_class = MailingForm
     success_url = reverse_lazy('mailings:mailing_list')
 
-    def form_valid(self, form):
+    def form_valid(self, form) -> HttpResponse:
         if form.is_valid():
-            mailing = form.save()
-            mailing.slug = slugify(f'{mailing.title}-{mailing.pk}')
-            mailing.save()
+            self.object = form.save()
+            self.object.slug = slugify(f'{self.object.title}-{self.object.pk}')
+            self.object.save()
 
         return super().form_valid(form)
 
@@ -77,14 +78,14 @@ class MailingUpdateView(UpdateView):
     Класс для редактирования рассылки
     '''
     model = Mailing
-    fields = ('title', 'body', 'sending_time', 'regularity',)
+    form_class = MailingForm
     success_url = reverse_lazy('mailings:mailing_list')
 
-    def form_valid(self, form):
+    def form_valid(self, form) -> HttpResponse:
         if form.is_valid():
-            mailing = form.save()
-            mailing.slug = slugify(f'{mailing.title}-{mailing.pk}')
-            mailing.save()
+            self.object = form.save()
+            self.object.slug = slugify(f'{self.object.title}-{self.object.pk}')
+            self.object.save()
 
         return super().form_valid(form)
 
@@ -115,6 +116,7 @@ def change_status(request, slug) -> HttpResponse:
     '''
     object_id = Mailing.objects.get(slug=slug).pk
     object = get_object_or_404(Mailing, pk=object_id)
+
     if request.method == 'POST':
         object.status = MailingStatus.objects.get(name='завершена')
         object.save()
@@ -154,7 +156,7 @@ class ClientCreateView(CreateView):
     Класс для создания клиента
     '''
     model = Client
-    fields = ('fullname', 'email', 'comment',)
+    form_class = ClientForm
     success_url = reverse_lazy('mailings:client_list')
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
@@ -169,7 +171,7 @@ class ClientUpdateView(UpdateView):
     Класс для обновления клиента
     '''
     model = Client
-    fields = ('fullname', 'email', 'comment',)
+    form_class = ClientForm
     success_url = reverse_lazy('mailings:client_list')
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
@@ -191,3 +193,23 @@ class ClientDeleteView(DeleteView):
         context['title'] = f'Удаление клиента {self.object.fullname}'
 
         return context
+
+
+class MailingLogsListView(ListView):
+    '''
+    Класс для просмотра всех логов рассылок
+    '''
+    model = MailingLogs
+    template_name = 'mailings/mailing_logs_list.html'
+
+    def get_queryset(self, *args, **kwargs) -> MailingLogs:
+        queryset = super().get_queryset(*args, **kwargs)
+        queryset = queryset.order_by('-attempt_datetime')
+
+        return queryset
+
+    def get_context_data(self, *, object_list=None, **kwargs) -> dict[str, Any]:
+        context_data = super().get_context_data(**kwargs)
+        context_data['title'] = 'Логи рассылок'
+
+        return context_data
