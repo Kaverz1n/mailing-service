@@ -1,4 +1,5 @@
 {% extends 'mailings/base.html' %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 <div class="container">
@@ -9,11 +10,11 @@
                 {% csrf_token %}
                 {% if object %}
                     <h3 class="text-center">ОБНОВЛЕНИЕ РАССЫЛКИ</h3>
-                    {{ form.as_p }}
+                    {{ form|crispy }}
                     <button type="submit" class="text-center btn btn-outline-dark" >ОБНОВИТЬ</button>
                 {% else %}
                     <h3 class="text-center">СОЗДАНИЕ РАССЫЛКИ</h3>
-                    {{ form.as_p }}
+                    {{ form|crispy }}
                     <button type="submit" class="text-center btn btn-outline-dark" >СОЗДАТЬ</button>
                 {% endif %}
             </form>
