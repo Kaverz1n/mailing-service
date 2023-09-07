@@ -61,6 +61,7 @@ class MailingCreateView(CreateView):
     def form_valid(self, form) -> HttpResponse:
         if form.is_valid():
             self.object = form.save()
+            self.object.status = MailingStatus.objects.get(name='создана')
             self.object.slug = slugify(f'{self.object.title}-{self.object.pk}')
             self.object.save()
 
