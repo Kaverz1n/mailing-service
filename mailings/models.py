@@ -58,8 +58,7 @@ class Mailing(models.Model):
     sending_time = models.DateTimeField(default=timezone.now, verbose_name='Время')
     regularity = models.ForeignKey(MailingRegularity, on_delete=models.SET_NULL, verbose_name='Переодичность',
                                    **NULLABLE)
-    status = models.ForeignKey(MailingStatus, on_delete=models.CASCADE, verbose_name='Статус',
-                               default=MailingStatus.objects.get(name='создана').pk)
+    status = models.ForeignKey(MailingStatus, on_delete=models.CASCADE, verbose_name='Статус', **NULLABLE)
 
     def __str__(self) -> str:
         return f'{self.title}'
