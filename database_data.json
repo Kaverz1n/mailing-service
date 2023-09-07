@@ -1,0 +1,44 @@
+[
+  {
+    "model": "mailings.mailingregularity",
+    "pk": 1,
+    "fields": {
+      "name": "раз в день"
+    }
+  },
+  {
+    "model": "mailings.mailingregularity",
+    "pk": 2,
+    "fields": {
+      "name": "раз в неделю"
+    }
+  },
+  {
+    "model": "mailings.mailingregularity",
+    "pk": 3,
+    "fields": {
+      "name": "раз в месяц"
+    }
+  },
+  {
+    "model": "mailings.mailingstatus",
+    "pk": 1,
+    "fields": {
+      "name": "завершена"
+    }
+  },
+  {
+    "model": "mailings.mailingstatus",
+    "pk": 2,
+    "fields": {
+      "name": "создана"
+    }
+  },
+  {
+    "model": "mailings.mailingstatus",
+    "pk": 3,
+    "fields": {
+      "name": "запущена"
+    }
+  }
+]
