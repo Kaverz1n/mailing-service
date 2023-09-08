@@ -17,5 +17,8 @@ def send_email(title, body, users_email_list) -> None:
             users_email_list,
             fail_silently=False
         )
-    except:
-        print('Ошибка отправки')
+    except Exception as e:
+        print(
+            'Ошибка отправки\n'
+            f'Ошибка: {e}'
+        )
