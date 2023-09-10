@@ -4,6 +4,7 @@ import random
 from typing import Any
 
 from django.contrib.auth import login
+from django.contrib.auth.models import Group
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView
 from django.http import HttpResponse
@@ -68,8 +69,11 @@ class UserConfirmEmailView(View):
             user = None
 
         if user is not None and default_token_generator.check_token(user, token):
+            group = Group.objects.get(name='service_users')
+            user.groups.add(group)
             user.is_active = True
             user.save()
+
             login(request, user)
             return redirect('users:email_confirmed')
         else:
