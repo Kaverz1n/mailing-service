@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
+from users.models import User
+
 NULLABLE = {'null': True, 'blank': True}
 
 
@@ -11,6 +13,7 @@ class Client(models.Model):
     fullname = models.CharField(max_length=100, verbose_name='ФИО')
     email = models.EmailField(max_length=254, verbose_name='E-mail', unique=True)
     comment = models.TextField(verbose_name='Комментарий', **NULLABLE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь сервиса', **NULLABLE)
 
     def str(self) -> str:
         return f'{self.email}'
@@ -59,6 +62,7 @@ class Mailing(models.Model):
     regularity = models.ForeignKey(MailingRegularity, on_delete=models.SET_NULL, verbose_name='Переодичность',
                                    **NULLABLE)
     status = models.ForeignKey(MailingStatus, on_delete=models.CASCADE, verbose_name='Статус', **NULLABLE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь сервиса', **NULLABLE)
 
     def __str__(self) -> str:
         return f'{self.title}'
