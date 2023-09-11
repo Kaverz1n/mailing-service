@@ -11,7 +11,7 @@ class Client(models.Model):
     Модель клиента сервиса
     '''
     fullname = models.CharField(max_length=100, verbose_name='ФИО')
-    email = models.EmailField(max_length=254, verbose_name='E-mail', unique=True)
+    email = models.EmailField(max_length=254, verbose_name='E-mail')
     comment = models.TextField(verbose_name='Комментарий', **NULLABLE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь сервиса', **NULLABLE)
 
@@ -21,6 +21,7 @@ class Client(models.Model):
     class Meta:
         verbose_name = 'клиент'
         verbose_name_plural = 'клиенты'
+        unique_together = ('email', 'user')
 
 
 class MailingRegularity(models.Model):
