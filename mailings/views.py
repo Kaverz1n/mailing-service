@@ -243,6 +243,12 @@ class ClientCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = 'mailings.add_client'
     success_url = reverse_lazy('mailings:client_list')
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+
+        return kwargs
+
     def form_valid(self, form):
         if form.is_valid():
             self.object = form.save()
