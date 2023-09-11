@@ -21,3 +21,17 @@ class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
         fields = ('fullname', 'email', 'comment',)
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')
+
+        super().__init__(*args, **kwargs)
+
+    def clean_email(self):
+        cleaned_data = self.cleaned_data['email']
+        is_existed = Client.objects.filter(email=cleaned_data, user=self.user).exists()
+
+        if is_existed:
+            raise forms.ValidationError('Пользователь с таким e-mail существует!')
+
+        return cleaned_data
