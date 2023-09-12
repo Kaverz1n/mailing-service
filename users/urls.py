@@ -5,13 +5,14 @@ from users.apps import UsersConfig
 from users.views import (
     UserRegisterView, UserLoginView, UserSentConfirmEmail, UserConfirmEmailView,
     UserConfirmedEmail, UserFailConfirmEmail, UserPasswordResetView, UserSentPassword,
-    UserListView, UserChangeActive
+    UserListView, UserChangeActive, UserDetailView
 )
 
 app_name = UsersConfig.name
 
 urlpatterns = [
     path('', UserListView.as_view(), name='user_list'),
+    path('user/<int:pk>/', UserDetailView.as_view(), name='user_detail'),
     path('register/', UserRegisterView.as_view(), name='register'),
     path('login/', UserLoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
