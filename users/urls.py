@@ -4,12 +4,14 @@ from django.urls import path
 from users.apps import UsersConfig
 from users.views import (
     UserRegisterView, UserLoginView, UserSentConfirmEmail, UserConfirmEmailView,
-    UserConfirmedEmail, UserFailConfirmEmail, UserPasswordResetView, UserSentPassword
+    UserConfirmedEmail, UserFailConfirmEmail, UserPasswordResetView, UserSentPassword,
+    UserListView, UserChangeActive
 )
 
 app_name = UsersConfig.name
 
 urlpatterns = [
+    path('', UserListView.as_view(), name='user_list'),
     path('register/', UserRegisterView.as_view(), name='register'),
     path('login/', UserLoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
@@ -18,5 +20,6 @@ urlpatterns = [
     path('confirmed_email/', UserConfirmedEmail.as_view(), name='email_confirmed'),
     path('fail_confirm_email/', UserFailConfirmEmail.as_view(), name='email_fail_confirm'),
     path('password_reset/', UserPasswordResetView.as_view(), name='password_reset'),
-    path('password_sent_email/', UserSentPassword.as_view(), name='password_sent_email')
+    path('password_sent_email/', UserSentPassword.as_view(), name='password_sent_email'),
+    path('change_active/<int:pk>/', UserChangeActive.as_view(), name='user_change_active')
 ]
