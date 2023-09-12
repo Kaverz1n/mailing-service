@@ -38,13 +38,26 @@ def check_user(user, current_user) -> bool:
     return user == current_user
 
 
+def get_status_object(status_name) -> MailingStatus:
+    '''
+    Функция возвращает объект класса MailingStatus по переданному имени
+    :param status_name: имя статуса
+    :return: MailingStatus objects
+    '''
+    try:
+        status = MailingStatus.objects.get(name=status_name)
+        return status
+    except Exception as e:
+        print(f'Ошибка - {e}')
+
+
 def check_mailing_status(mailing, status_name) -> bool:
     '''
     Функция проверят, что статус рассылки равен переданому
     :param mailing: рассылка сервиса
     :param status_name: имя статуса
-    :return:
+    :return: bool
     '''
-    status = MailingStatus.objects.get(name=status_name)
+    status = get_status_object(status_name)
 
     return mailing.status == status
