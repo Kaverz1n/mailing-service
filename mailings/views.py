@@ -1,6 +1,8 @@
 from typing import Any
 
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+)
 from django.db.models import QuerySet
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -13,6 +15,7 @@ from pytils.translit import slugify
 
 from mailings.forms import MailingForm, ClientForm
 from mailings.models import Mailing, MailingStatus, Client, MailingLogs
+from mailings.services import check_user, check_mailing_status
 
 
 class IndexView(TemplateView):
@@ -33,7 +36,7 @@ class MailingListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     Класс отображения страницы со всеми рассылками
     '''
     model = Mailing
-    permission_required = 'mailings.view_mailing'
+    permission_required = 'mailings.add_mailing'
 
     def get_queryset(self, *args, **kwargs) -> QuerySet:
         queryset = super().get_queryset(*args, **kwargs)
@@ -57,9 +60,7 @@ class MailingDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView)
     permission_required = 'mailings.view_mailing'
 
     def dispatch(self, request, *args, **kwargs) -> HttpResponse:
-        user = self.get_object().user
-
-        if user != self.request.user:
+        if not check_user(self.get_object().user, self.request.user):
             return redirect('mailings:mailing_list')
 
         return super().dispatch(request, *args, **kwargs)
@@ -108,12 +109,10 @@ class MailingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
 
     def dispatch(self, request, *args, **kwargs) -> HttpResponse:
         mailing = self.get_object()
-        user = mailing.user
-        status = MailingStatus.objects.get(name='создана')
 
-        if user != self.request.user:
+        if not check_user(mailing.user, self.request.user):
             return redirect('mailings:mailing_list')
-        elif mailing.status != status:
+        elif not check_mailing_status(mailing, 'создана'):
             return redirect('mailings:mailing_list')
 
         return super().dispatch(request, *args, **kwargs)
@@ -143,12 +142,10 @@ class MailingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
 
     def dispatch(self, request, *args, **kwargs) -> HttpResponse:
         mailing = self.get_object()
-        user = mailing.user
-        status = MailingStatus.objects.get(name='запущена')
 
-        if user != self.request.user:
+        if not check_user(mailing.user, self.request.user):
             return redirect('mailings:mailing_list')
-        elif mailing.status == status:
+        elif check_mailing_status(mailing, 'запущена'):
             return redirect('mailings:mailing_list')
 
         return super().dispatch(request, *args, **kwargs)
@@ -173,15 +170,13 @@ class ChangeMailingStatusView(LoginRequiredMixin, PermissionRequiredMixin, View)
 
     def get(self, request, slug) -> HttpResponse:
         mailing = self.__get_mailing(slug)
-        user = mailing.user
-        status = MailingStatus.objects.get(name='запущена')
 
-        if user != self.request.user:
+        if not check_user(mailing.user, self.request.user):
             return redirect('mailings:mailing_list')
-        elif mailing.status != status:
+        elif not check_mailing_status(mailing, 'запущена'):
             return redirect('mailings:mailing_list')
 
-        return render(request, 'mailings/mailing_status_change.html', {'object': mailing})
+        return render(request, 'mailings/mailing_status_change.html', {'object': mailing, 'title': 'Изменение статуса'})
 
     def post(self, request, slug) -> HttpResponse:
         mailing = self.__get_mailing(slug)
@@ -196,7 +191,7 @@ class ClientListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     Класс для отображения всех клиентов
     '''
     model = Client
-    permission_required = 'mailings.view_client'
+    permission_required = 'mailings.add_client'
 
     def get_queryset(self, *args, **kwargs) -> QuerySet:
         queryset = super().get_queryset(*args, **kwargs)
@@ -220,9 +215,7 @@ class ClientDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     permission_required = 'mailings.view_client'
 
     def dispatch(self, request, *args, **kwargs) -> HttpResponse:
-        user = self.get_object().user
-
-        if user != self.request.user:
+        if not check_user(self.get_object().user, self.request.user):
             return redirect('mailings:client_list')
 
         return super().dispatch(request, *args, **kwargs)
@@ -273,13 +266,17 @@ class ClientUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     permission_required = 'mailings.change_client'
     success_url = reverse_lazy('mailings:client_list')
 
-    def dispatch(self, request, *args, **kwargs) -> None:
-        user = self.get_object().user
-
-        if user != self.request.user:
+    def dispatch(self, request, *args, **kwargs) -> HttpResponse:
+        if not check_user(self.get_object().user, self.request.user):
             return redirect('mailings:client_list')
 
         return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+
+        return kwargs
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -297,9 +294,7 @@ class ClientDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy('mailings:client_list')
 
     def dispatch(self, request, *args, **kwargs) -> HttpResponse:
-        user = self.get_object().user
-
-        if user != self.request.user:
+        if not check_user(self.get_object().user, self.request.user):
             return redirect('mailings:client_list')
 
         return super().dispatch(request, *args, **kwargs)
@@ -330,3 +325,16 @@ class MailingLogsListView(LoginRequiredMixin, PermissionRequiredMixin, ListView)
         context_data['title'] = 'Логи рассылок'
 
         return context_data
+
+
+class ManagerMailingListView(UserPassesTestMixin, MailingListView):
+    template_name = 'mailings/manager_mailing_list.html'
+    permission_required = 'mailings.view_mailing'
+
+    def get_queryset(self, *args, **kwargs) -> QuerySet:
+        queryset = Mailing.objects.all()
+
+        return queryset
+
+    def test_func(self) -> bool:
+        return self.request.user.is_staff
