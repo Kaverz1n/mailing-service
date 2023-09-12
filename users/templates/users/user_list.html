@@ -7,12 +7,14 @@
         {% for object in object_list %}
             {% if object.is_active %}
                 <div class="col-3">
-                    <div class="card text-white bg-dark mb-3" style="max-width: 18rem;">
-                        <div class="card-header mt-2">{{ object.email }}</div>
-                        <hr>
-                        <a href="{% url 'users:user_change_active' object.id%}" type="button"
-                           class="btn btn-dark mb-2">Заблокировать</a>
-                    </div>
+                    <a href="{% url 'users:user_detail' object.pk %}" class="text-white">
+                        <div class="card text-white bg-dark mb-3" style="max-width: 18rem;">
+                            <div class="card-header mt-2">{{ object.email }}</div>
+                            <hr>
+                            <a href="{% url 'users:user_change_active' object.id%}" type="button"
+                               class="btn btn-dark mb-2">Заблокировать</a>
+                        </div>
+                    </a>
                 </div>
             {% endif %}
         {% endfor %}
