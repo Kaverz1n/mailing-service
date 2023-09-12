@@ -4,17 +4,19 @@ import random
 from typing import Any
 
 from django.contrib.auth import login
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views import View
-from django.views.generic import CreateView, TemplateView
+from django.views.generic import CreateView, TemplateView, ListView
 
+from mailings.models import MailingStatus
 from mailings.services import send_email
 from users.forms import RegisterForm, ResetPasswordForm
 from users.models import User
@@ -174,3 +176,53 @@ class UserSentPassword(TemplateView):
         context_data['title'] = 'Новый пароль отправлен'
 
         return context_data
+
+
+class UserListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+    '''
+    Класс для просмотра всех пользователей сервиса
+    '''
+    model = User
+    permission_required = 'users.view_user'
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Пользователи'
+
+        return context
+
+
+class UserChangeActive(LoginRequiredMixin, PermissionRequiredMixin, View):
+    '''
+    Класс для изменения поля is_active у пользователя сервиса
+    '''
+    permission_required = 'users.change_user'
+
+    def __get_user(self, pk):
+        user = get_object_or_404(User, pk=pk)
+
+        return user
+
+    def get(self, request, pk):
+        user = self.__get_user(pk)
+        if user.is_active:
+            title = 'Блокировка пользователя'
+        else:
+            title = 'Разблокировка пользователя'
+
+        return render(request, 'users/user_change_active.html', {'object': user, 'title': title})
+
+    def post(self, request, pk):
+        user = self.__get_user(pk)
+
+        if user.is_active:
+            user.is_active = False
+            for mailing in user.mailing_set.all():
+                mailing.status = MailingStatus.objects.get(name='завершена')
+                mailing.save()
+        else:
+            user.is_active = True
+
+        user.save()
+
+        return redirect('users:user_list')
