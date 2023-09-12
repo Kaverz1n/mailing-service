@@ -13,3 +13,15 @@ def mediapath(url) -> str:
     '''
     media_url = f'/media/{url}'
     return media_url
+
+
+@register.filter
+def has_group(user, group_name) -> bool:
+    '''
+    Возвращает True, в случае если пользователь относится
+    к определенной группе пользователей
+    :param user: пользователь
+    :param group_name: имя группы
+    :return: bool-значение
+    '''
+    return user.groups.filter(name=group_name).exists()
