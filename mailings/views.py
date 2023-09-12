@@ -3,10 +3,10 @@ from typing import Any
 from django.contrib.auth.mixins import (
     LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 )
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views import View
 from django.views.generic import (
     TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
@@ -15,7 +15,7 @@ from pytils.translit import slugify
 
 from mailings.forms import MailingForm, ClientForm
 from mailings.models import Mailing, MailingStatus, Client, MailingLogs
-from mailings.services import check_user, check_mailing_status
+from mailings.services import check_user, check_mailing_status, get_status_object
 
 
 class IndexView(TemplateView):
@@ -31,17 +31,16 @@ class IndexView(TemplateView):
         return context
 
 
-class MailingListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+class MailingListView(LoginRequiredMixin, UserPassesTestMixin, PermissionRequiredMixin, ListView):
     '''
     Класс отображения страницы со всеми рассылками
     '''
     model = Mailing
-    permission_required = 'mailings.add_mailing'
+    permission_required = 'mailings.view_mailing'
 
     def get_queryset(self, *args, **kwargs) -> QuerySet:
         queryset = super().get_queryset(*args, **kwargs)
-        user = self.request.user
-        queryset = queryset.filter(user=user)
+        queryset = queryset.filter(user=self.request.user)
 
         return queryset
 
@@ -50,6 +49,9 @@ class MailingListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         context['title'] = 'Рассылки'
 
         return context
+
+    def test_func(self):
+        return not self.request.user.is_staff
 
 
 class MailingDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
@@ -60,8 +62,15 @@ class MailingDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView)
     permission_required = 'mailings.view_mailing'
 
     def dispatch(self, request, *args, **kwargs) -> HttpResponse:
-        if not check_user(self.get_object().user, self.request.user):
-            return redirect('mailings:mailing_list')
+        group = self.request.user.groups.filter(name='manager')
+        status = self.get_object().status
+
+        if not group:
+            if not check_user(self.get_object().user, self.request.user):
+                return redirect('mailings:mailing_list')
+        else:
+            if status == get_status_object('завершена'):
+                return redirect('mailings:manager_mailing_list')
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -110,9 +119,7 @@ class MailingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
     def dispatch(self, request, *args, **kwargs) -> HttpResponse:
         mailing = self.get_object()
 
-        if not check_user(mailing.user, self.request.user):
-            return redirect('mailings:mailing_list')
-        elif not check_mailing_status(mailing, 'создана'):
+        if not check_user(mailing.user, self.request.user) or not check_mailing_status(mailing, 'создана'):
             return redirect('mailings:mailing_list')
 
         return super().dispatch(request, *args, **kwargs)
@@ -138,15 +145,16 @@ class MailingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
     '''
     model = Mailing
     permission_required = 'mailings.delete_mailing'
-    success_url = reverse_lazy('mailings:mailing_list')
 
     def dispatch(self, request, *args, **kwargs) -> HttpResponse:
         mailing = self.get_object()
+        group = self.request.user.groups.filter(name='manager')
 
-        if not check_user(mailing.user, self.request.user):
-            return redirect('mailings:mailing_list')
-        elif check_mailing_status(mailing, 'запущена'):
-            return redirect('mailings:mailing_list')
+        if not group:
+            if not check_user(mailing.user, self.request.user) or check_mailing_status(mailing, 'запущена'):
+                return redirect('mailings:mailing_list')
+        elif self.get_object().status != get_status_object('создана'):
+            return redirect('mailings:manager_mailing_list')
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -155,6 +163,14 @@ class MailingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
         context['title'] = f'Удаление рассылки {self.object.title}'
 
         return context
+
+    def get_success_url(self):
+        group = self.request.user.groups.filter(name='manager')
+
+        if group:
+            return reverse('mailings:manager_mailing_list')
+
+        return reverse('mailings:mailing_list')
 
 
 class ChangeMailingStatusView(LoginRequiredMixin, PermissionRequiredMixin, View):
@@ -170,18 +186,26 @@ class ChangeMailingStatusView(LoginRequiredMixin, PermissionRequiredMixin, View)
 
     def get(self, request, slug) -> HttpResponse:
         mailing = self.__get_mailing(slug)
+        group = self.request.user.groups.filter(name='manager')
 
-        if not check_user(mailing.user, self.request.user):
-            return redirect('mailings:mailing_list')
-        elif not check_mailing_status(mailing, 'запущена'):
-            return redirect('mailings:mailing_list')
+        if not group:
+            if not check_user(mailing.user, self.request.user) or not check_mailing_status(mailing, 'запущена'):
+                return redirect('mailings:mailing_list')
 
-        return render(request, 'mailings/mailing_status_change.html', {'object': mailing, 'title': 'Изменение статуса'})
+        return render(
+            request, 'mailings/mailing_status_change.html',
+            {'object': mailing, 'title': 'Изменение статуса'}
+        )
 
     def post(self, request, slug) -> HttpResponse:
         mailing = self.__get_mailing(slug)
         mailing.status = MailingStatus.objects.get(name='завершена')
         mailing.save()
+
+        group = self.request.user.groups.filter(name='manager')
+
+        if group:
+            return redirect('mailings:manager_mailing_list')
 
         return redirect('mailings:mailing_list')
 
@@ -191,7 +215,7 @@ class ClientListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     Класс для отображения всех клиентов
     '''
     model = Client
-    permission_required = 'mailings.add_client'
+    permission_required = 'mailings.view_client'
 
     def get_queryset(self, *args, **kwargs) -> QuerySet:
         queryset = super().get_queryset(*args, **kwargs)
@@ -327,12 +351,18 @@ class MailingLogsListView(LoginRequiredMixin, PermissionRequiredMixin, ListView)
         return context_data
 
 
-class ManagerMailingListView(UserPassesTestMixin, MailingListView):
+class ManagerMailingListView(MailingListView):
+    '''
+    Класс для отображения страницы всех активных рассылок для менеджера
+    '''
     template_name = 'mailings/manager_mailing_list.html'
     permission_required = 'mailings.view_mailing'
 
     def get_queryset(self, *args, **kwargs) -> QuerySet:
-        queryset = Mailing.objects.all()
+        queryset = Mailing.objects.filter(
+            Q(status=get_status_object('запущена')) |
+            Q(status=get_status_object('создана'))
+        )
 
         return queryset
 
