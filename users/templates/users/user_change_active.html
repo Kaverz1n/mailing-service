@@ -7,10 +7,10 @@
             {% csrf_token %}
             {% if object.is_active %}
                 <h2>Вы действительно хотите заблокировать пользователя "{{ object.email }}"?</h2>
-                <p class="mb-3 fw-semibold lh-1 mt-3">Вы также сможете его разблокировать позже</p>
+                <p class="mb-3 fw-semibold lh-1 mt-3">Вы также сможете его разблокировать позже.</p>
             {% else %}
                 <h2>Вы действительно хотите разблокировать пользователя "{{ object.email }}"?</h2>
-                <p class="mb-3 fw-semibold lh-1 mt-3">Вы также сможете его заблокировать позже</p>
+                <p class="mb-3 fw-semibold lh-1 mt-3">Вы также сможете его заблокировать позже.</p>
             {% endif %}
             <div class="row mt-1 mb-2">
                 <div class="col-1 me-5 ">
