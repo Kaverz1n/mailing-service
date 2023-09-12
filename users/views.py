@@ -4,7 +4,7 @@ import random
 from typing import Any
 
 from django.contrib.auth import login
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import Group
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView
@@ -14,10 +14,10 @@ from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views import View
-from django.views.generic import CreateView, TemplateView, ListView
+from django.views.generic import CreateView, TemplateView, ListView, DetailView
 
-from mailings.models import MailingStatus
-from mailings.services import send_email
+from mailings.models import Mailing
+from mailings.services import send_email, get_status_object
 from users.forms import RegisterForm, ResetPasswordForm
 from users.models import User
 
@@ -178,7 +178,7 @@ class UserSentPassword(TemplateView):
         return context_data
 
 
-class UserListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+class UserListView(LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin, ListView):
     '''
     Класс для просмотра всех пользователей сервиса
     '''
@@ -191,8 +191,33 @@ class UserListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
 
         return context
 
+    def test_func(self):
+        return self.request.user.is_staff
 
-class UserChangeActive(LoginRequiredMixin, PermissionRequiredMixin, View):
+
+class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin, DetailView):
+    '''
+    Класс для просмотра одного пользователя сервиса
+    '''
+    model = User
+    permission_required = 'users.view_user'
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        user = self.object
+
+        context['title'] = f'Пользователь {self.object.email}'
+        context['total_mailings'] = len(Mailing.objects.filter(user=user))
+        context['created_mailings'] = len(Mailing.objects.filter(user=user, status=get_status_object('создана')))
+        context['running_mailings'] = len(Mailing.objects.filter(user=user, status=get_status_object('запущена')))
+
+        return context
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+
+class UserChangeActive(LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin, View):
     '''
     Класс для изменения поля is_active у пользователя сервиса
     '''
@@ -205,6 +230,7 @@ class UserChangeActive(LoginRequiredMixin, PermissionRequiredMixin, View):
 
     def get(self, request, pk):
         user = self.__get_user(pk)
+
         if user.is_active:
             title = 'Блокировка пользователя'
         else:
@@ -218,7 +244,7 @@ class UserChangeActive(LoginRequiredMixin, PermissionRequiredMixin, View):
         if user.is_active:
             user.is_active = False
             for mailing in user.mailing_set.all():
-                mailing.status = MailingStatus.objects.get(name='завершена')
+                mailing.status = get_status_object('завершена')
                 mailing.save()
         else:
             user.is_active = True
@@ -226,3 +252,6 @@ class UserChangeActive(LoginRequiredMixin, PermissionRequiredMixin, View):
         user.save()
 
         return redirect('users:user_list')
+
+    def test_func(self):
+        return self.request.user.is_staff
