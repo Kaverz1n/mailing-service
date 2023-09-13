@@ -191,6 +191,8 @@ class ChangeMailingStatusView(LoginRequiredMixin, PermissionRequiredMixin, View)
         if not group:
             if not check_user(mailing.user, self.request.user) or not check_mailing_status(mailing, 'запущена'):
                 return redirect('mailings:mailing_list')
+        elif not check_mailing_status(mailing, 'запущена'):
+            return redirect('mailings:manager_mailing_list')
 
         return render(
             request, 'mailings/mailing_status_change.html',
