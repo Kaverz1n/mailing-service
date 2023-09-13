@@ -22,9 +22,15 @@
                         {% endif %}
                     </button>
                 </div>
-                <div class="col-1 ms-2">
-                    <a class="btn btn-outline-dark" href="{% url 'users:user_list' %}">НАЗАД</a>
-                </div>
+                {% if object.is_active %}
+                    <div class="col-1 ms-2">
+                        <a class="btn btn-outline-dark" href="{% url 'users:user_list' %}">НАЗАД</a>
+                    </div>
+                {% else %}
+                    <div class="col-1 ms-3">
+                        <a class="btn btn-outline-dark" href="{% url 'users:user_list' %}">НАЗАД</a>
+                    </div>
+                {% endif %}
             </div>
         </form>
     </div>

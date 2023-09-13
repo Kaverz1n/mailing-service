@@ -22,7 +22,7 @@
         {% for object in object_list %}
             {% if not object.is_active %}
                 <div class="col-3">
-                    <a href="{% url 'mailings:client_detail' object.pk %}" class="link-light">
+                    <a href="{% url 'users:user_detail' object.pk %}" class="link-light">
                         <div class="card text-white bg-white mb-3" style="max-width: 18rem;">
                             <div class="card-header mt-2 text-dark">{{ object.email }}</div>
                             <hr>
