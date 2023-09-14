@@ -10,7 +10,7 @@
                         <a class="nav-link active" aria-current="page" href="{% url 'mailings:index' %}">Главная</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Блог</a>
+                        <a class="nav-link active" aria-current="page" href="{% url 'blog:article_list' %}">Блог</a>
                     </li>
                     {% if user.is_authenticated %}
                         {% if user|has_group:"service_users" %}
