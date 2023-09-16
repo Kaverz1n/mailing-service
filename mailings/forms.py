@@ -24,14 +24,17 @@ class ClientForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
+        self.email = kwargs.pop('email')
 
         super().__init__(*args, **kwargs)
 
     def clean_email(self):
         cleaned_data = self.cleaned_data['email']
-        is_existed = Client.objects.filter(email=cleaned_data, user=self.user).exists()
 
-        if is_existed:
-            raise forms.ValidationError('Пользователь с таким e-mail существует!')
+        if cleaned_data != self.email:
+            is_existed = Client.objects.filter(email=cleaned_data, user=self.user).exists()
+
+            if is_existed:
+                raise forms.ValidationError('Пользователь с таким e-mail существует!')
 
         return cleaned_data
