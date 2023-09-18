@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django import forms
 
 from mailings.models import Mailing, Client
@@ -11,6 +13,20 @@ class MailingForm(forms.ModelForm):
     class Meta:
         model = Mailing
         fields = ('title', 'body', 'sending_time', 'regularity',)
+        widgets = {'sending_time': forms.DateTimeInput(attrs={'type': 'datetime-local'})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['sending_time'].help_text = 'Рассылка должна быть опубликована не ранее, ' \
+                                                'чем через минуту от текущего времени.'
+
+    def clean_sending_time(self):
+        cleaned_data = self.cleaned_data['sending_time']
+
+        if cleaned_data.timestamp() <= datetime.now().timestamp():
+            raise forms.ValidationError('Рассылка должна иметь достоверное время')
+
+        return cleaned_data
 
 
 class ClientForm(forms.ModelForm):
