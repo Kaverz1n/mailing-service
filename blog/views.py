@@ -1,11 +1,13 @@
 from typing import Any
 
+from blog.forms import ArticleForm
+from blog.models import Article
+
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
-from blog.forms import ArticleForm
-from blog.models import Article
+from mailings.services import get_articles_from_cache
 
 
 class ArticleListView(ListView):
@@ -13,6 +15,9 @@ class ArticleListView(ListView):
     Класс для отображения всех статей блога
     '''
     model = Article
+
+    def get_queryset(self):
+        return get_articles_from_cache()
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
