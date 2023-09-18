@@ -56,9 +56,9 @@ class Mailing(models.Model):
     '''
     Модель рассылки
     '''
-    title = models.CharField(max_length=100, verbose_name='Тема')
+    title = models.CharField(max_length=80, verbose_name='Тема')
     body = models.TextField(verbose_name='Тело')
-    slug = models.SlugField(max_length=50, unique=True, allow_unicode=True, **NULLABLE)
+    slug = models.SlugField(max_length=100, unique=True, allow_unicode=True, **NULLABLE)
     sending_time = models.DateTimeField(default=timezone.now, verbose_name='Время')
     regularity = models.ForeignKey(MailingRegularity, on_delete=models.SET_NULL, verbose_name='Переодичность',
                                    **NULLABLE)
