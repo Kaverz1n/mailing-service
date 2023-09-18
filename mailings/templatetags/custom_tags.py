@@ -27,7 +27,7 @@ def has_group(user, group_name) -> bool:
     :return: bool-значение
     '''
     if settings.CACHE_ENABLED:
-        cache_key = f'user_belongs_{user.pk}_{group_name}'
+        cache_key = f'user_belongs_{group_name}_{user.pk}'
         users_group = cache.get(cache_key)
         if users_group is None:
             users_group = user.groups.filter(name=group_name).exists()
