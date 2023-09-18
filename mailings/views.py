@@ -1,3 +1,4 @@
+import random
 from typing import Any
 
 from django.contrib.auth.mixins import (
@@ -15,7 +16,9 @@ from pytils.translit import slugify
 
 from mailings.forms import MailingForm, ClientForm
 from mailings.models import Mailing, MailingStatus, Client, MailingLogs
-from mailings.services import check_user, check_mailing_status, get_status_object
+from mailings.services import (
+    check_user, check_mailing_status, get_status_object, get_articles_from_cache
+)
 
 
 class IndexView(TemplateView):
@@ -27,6 +30,13 @@ class IndexView(TemplateView):
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['title'] = 'Главная страница'
+        context['total_mailings'] = len(Mailing.objects.all())
+        context['active_mailings'] = len(Mailing.objects.exclude(status=get_status_object('завершена')))
+        context['unique_clients'] = len(Client.objects.values('email').distinct())
+        try:
+            context['blog_articles'] = random.sample(list(get_articles_from_cache()), 3)
+        except ValueError:
+            context['blog_articles'] = []
 
         return context
 
@@ -264,7 +274,7 @@ class ClientCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs.update({'user': self.request.user})
+        kwargs.update({'user': self.request.user, 'email': None})
 
         return kwargs
 
@@ -300,7 +310,7 @@ class ClientUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs.update({'user': self.request.user})
+        kwargs.update({'user': self.request.user, 'email': self.object.email})
 
         return kwargs
 
@@ -347,10 +357,10 @@ class MailingLogsListView(LoginRequiredMixin, PermissionRequiredMixin, ListView)
         return queryset
 
     def get_context_data(self, *, object_list=None, **kwargs) -> dict[str, Any]:
-        context_data = super().get_context_data(**kwargs)
-        context_data['title'] = 'Логи рассылок'
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Логи рассылок'
 
-        return context_data
+        return context
 
 
 class ManagerMailingListView(MailingListView):
@@ -367,6 +377,12 @@ class ManagerMailingListView(MailingListView):
         )
 
         return queryset
+
+    def get_context_data(self, *, object_list=None, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Активные рассылки'
+
+        return context
 
     def test_func(self) -> bool:
         return self.request.user.is_staff
