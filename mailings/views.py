@@ -61,7 +61,7 @@ class MailingListView(LoginRequiredMixin, UserPassesTestMixin, PermissionRequire
         return context
 
     def test_func(self):
-        return not self.request.user.is_staff
+        return not self.request.user.groups.filter(name='manager')
 
 
 class MailingDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
