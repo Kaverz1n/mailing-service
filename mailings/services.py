@@ -1,6 +1,9 @@
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
+from django.db.models import QuerySet
 
+from blog.models import Article
 from mailings.models import MailingStatus
 
 
@@ -61,3 +64,22 @@ def check_mailing_status(mailing, status_name) -> bool:
     status = get_status_object(status_name)
 
     return mailing.status == status
+
+
+def get_articles_from_cache() -> QuerySet:
+    '''
+    Функция возвращает все статьи из кэша. Если кэш пуст,
+    то сохраняет статьи из базы данных в него
+    :return: QuerySet состоящий из объектов Article
+    '''
+    if settings.CACHE_ENABLED:
+        key = 'articles'
+        cached_data = cache.get(key)
+
+        if cached_data is None:
+            cached_data = Article.objects.all()
+            cache.set(key, cached_data, 600)
+
+        return cached_data
+
+    return Article.objects.all()
