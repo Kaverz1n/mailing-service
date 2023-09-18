@@ -8,7 +8,11 @@
             <div class="row mt-1 ms-1">
                 <div class="col-5">
                     <a href="{% url 'mailings:mailing_detail' object.mailing.slug %}">
-                        <h3 class="text-start text-dark mt-1">{{ object.mailing.title|upper|slice:":22" }}...</h3>
+                        {% if object.mailing.title|length >= 22 %}
+                            <h3 class="text-start text-dark mt-1">{{ object.mailing.title|upper|slice:":22" }}...</h3>
+                        {% else %}
+                            <h3 class="text-start text-dark mt-1">{{ object.mailing.title|upper }}</h3>
+                        {% endif %}
                     </a>
                 </div>
                 <div class="col-4">
