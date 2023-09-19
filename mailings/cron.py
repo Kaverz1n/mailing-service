@@ -1,14 +1,12 @@
 import datetime
 
-from mailing_service.settings import EMAIL_HOST_USER
-
-from django.core.mail import send_mail
 from django.db.models import Q
 
 from mailings.models import Mailing, MailingStatus, MailingLogs, MailingRegularity, Client
+from mailings.services import send_email
 
 
-def send_email():
+def cron_send_email() -> None:
     '''
     Функция отправляет e-mail рассылку всем пользователям в указанную
     дату с определенной часттой - раз в день, раз в неделю, раз в месяц
@@ -24,7 +22,6 @@ def send_email():
         Q(status=MailingStatus.objects.get(name='создана')) |
         Q(status=MailingStatus.objects.get(name='запущена'))
     )
-    admin_email = EMAIL_HOST_USER
     users_email_list = [str(client.email) for client in Client.objects.all()]
 
     # перебор всех рассылок со статусом "создана" или "запущена"
@@ -32,8 +29,7 @@ def send_email():
         try:
             # отправка e-mail рассылки, если настоящее время больше установленного для отправки
             if mailing.sending_time.timestamp() < now.timestamp():
-                send_mail(mailing.title, mailing.body, admin_email, users_email_list,
-                          fail_silently=False)
+                send_email(mailing.title, mailing.body, users_email_list)
                 MailingLogs.objects.create(mailing=mailing)
 
                 # изменение статуса рассылки на "запущена", если у нее имеется частота отправки
@@ -52,4 +48,4 @@ def send_email():
 
                 mailing.save()
         except:
-            MailingLogs.objects.create(mailing=mailing, status=False)
+            MailingLogs.objects.create(mailing=mailing, status=False, server_response='ERROR')
