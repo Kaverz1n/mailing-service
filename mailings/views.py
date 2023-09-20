@@ -352,7 +352,7 @@ class MailingLogsListView(LoginRequiredMixin, PermissionRequiredMixin, ListView)
 
     def get_queryset(self, *args, **kwargs) -> MailingLogs:
         queryset = super().get_queryset(*args, **kwargs)
-        queryset = queryset.filter(mailing__user=self.request.user)
+        queryset = queryset.filter(mailing__user=self.request.user).order_by('-attempt_datetime')
 
         return queryset
 
