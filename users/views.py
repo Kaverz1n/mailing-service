@@ -90,7 +90,7 @@ class UserSentConfirmEmail(TemplateView):
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context_data = super().get_context_data(**kwargs)
-        context_data['title'] = 'Письмо отрплавено'
+        context_data['title'] = 'Письмо отправлено'
 
         return context_data
 
@@ -142,7 +142,7 @@ class UserPasswordResetView(View):
     def get(self, request) -> HttpResponse:
         form = ResetPasswordForm
 
-        return render(request, 'users/password_reset_form.html', {'form': form})
+        return render(request, 'users/password_reset_form.html', {'form': form, 'title': 'Сброс пароля'})
 
     def post(self, request) -> HttpResponse:
         form = ResetPasswordForm(request.POST)
@@ -162,7 +162,7 @@ class UserPasswordResetView(View):
 
             return redirect('users:password_sent_email')
 
-        return render(request, 'users/password_reset_form.html', {'form': form})
+        return render(request, 'users/password_reset_form.html', {'form': form, 'title': 'Сброс пароля'})
 
 
 class UserSentPassword(TemplateView):
@@ -206,7 +206,7 @@ class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, UserPassesTest
         context = super().get_context_data(**kwargs)
         user = self.object
 
-        context['title'] = f'Пользователь {self.object.email}'
+        context['title'] = f'{self.object.email}'
         context['total_mailings'] = len(Mailing.objects.filter(user=user))
         context['created_mailings'] = len(Mailing.objects.filter(user=user, status=get_status_object('создана')))
         context['running_mailings'] = len(Mailing.objects.filter(user=user, status=get_status_object('запущена')))
