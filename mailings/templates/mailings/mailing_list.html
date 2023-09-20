@@ -90,7 +90,9 @@
                                 </b>{{ object.sending_time }}
                                 </p>
                                 {% if object.regularity %}
-                                    <p class="card-text text-start text-muted"><b>Периодичность: </b>{{ object.regularity }}</p>
+                                    <p class="card-text text-start text-muted">
+                                        <b>Периодичность: </b>{{ object.regularity }}
+                                    </p>
                                 {% else %}
                                     <p class="card-text text-start text-muted"><b>Периодичность: </b>Не указана</p>
                                 {% endif %}
