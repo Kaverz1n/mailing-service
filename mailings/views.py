@@ -168,12 +168,6 @@ class MailingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
 
         return super().dispatch(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context['title'] = f'Удаление рассылки {self.object.title}'
-
-        return context
-
     def get_success_url(self):
         group = self.request.user.groups.filter(name='manager')
 
@@ -181,6 +175,12 @@ class MailingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
             return reverse('mailings:manager_mailing_list')
 
         return reverse('mailings:mailing_list')
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Удаление рассылки {self.object.title}'
+
+        return context
 
 
 class ChangeMailingStatusView(LoginRequiredMixin, PermissionRequiredMixin, View):
