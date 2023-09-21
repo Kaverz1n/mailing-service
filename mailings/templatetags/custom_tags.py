@@ -2,11 +2,13 @@ from django import template
 from django.conf import settings
 from django.core.cache import cache
 
+from users.models import User
+
 register = template.Library()
 
 
 @register.filter
-def mediapath(url) -> str:
+def mediapath(url: str) -> str:
     '''
     Возвращает созданный путь к изображениям
     в папке media
@@ -18,7 +20,7 @@ def mediapath(url) -> str:
 
 
 @register.filter
-def has_group(user, group_name) -> bool:
+def has_group(user: User, group_name: str) -> bool:
     '''
     Возвращает True, в случае если пользователь относится
     к определенной группе пользователей
