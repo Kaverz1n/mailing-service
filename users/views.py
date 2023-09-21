@@ -1,8 +1,6 @@
 import string
 import random
 
-from typing import Any
-
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import Group
@@ -18,6 +16,9 @@ from django.views.generic import CreateView, TemplateView, ListView, DetailView
 
 from mailings.models import Mailing
 from mailings.services import send_email, get_status_object
+
+from typing import Any
+
 from users.forms import RegisterForm, ResetPasswordForm
 from users.models import User
 
@@ -191,7 +192,7 @@ class UserListView(LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMi
 
         return context
 
-    def test_func(self):
+    def test_func(self) -> bool:
         return self.request.user.is_staff
 
 
@@ -213,7 +214,7 @@ class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, UserPassesTest
 
         return context
 
-    def test_func(self):
+    def test_func(self) -> bool:
         return self.request.user.is_staff
 
 
@@ -223,12 +224,12 @@ class UserChangeActive(LoginRequiredMixin, PermissionRequiredMixin, UserPassesTe
     '''
     permission_required = 'users.change_user'
 
-    def __get_user(self, pk):
+    def __get_user(self, pk) -> User:
         user = get_object_or_404(User, pk=pk)
 
         return user
 
-    def get(self, request, pk):
+    def get(self, request, pk) -> HttpResponse:
         user = self.__get_user(pk)
 
         if user.is_active:
@@ -238,7 +239,7 @@ class UserChangeActive(LoginRequiredMixin, PermissionRequiredMixin, UserPassesTe
 
         return render(request, 'users/user_change_active.html', {'object': user, 'title': title})
 
-    def post(self, request, pk):
+    def post(self, request, pk) -> HttpResponse:
         user = self.__get_user(pk)
 
         if user.is_active:
@@ -253,5 +254,5 @@ class UserChangeActive(LoginRequiredMixin, PermissionRequiredMixin, UserPassesTe
 
         return redirect('users:user_list')
 
-    def test_func(self):
+    def test_func(self) -> bool:
         return self.request.user.is_staff
