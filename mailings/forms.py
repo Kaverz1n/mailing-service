@@ -15,12 +15,12 @@ class MailingForm(forms.ModelForm):
         fields = ('title', 'body', 'sending_time', 'regularity',)
         widgets = {'sending_time': forms.DateTimeInput(attrs={'type': 'datetime-local'})}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.fields['sending_time'].help_text = 'Рассылка должна быть опубликована не ранее, ' \
                                                 'чем через минуту от текущего времени.'
 
-    def clean_sending_time(self):
+    def clean_sending_time(self) -> datetime:
         cleaned_data = self.cleaned_data['sending_time']
 
         if cleaned_data.timestamp() <= datetime.now().timestamp():
@@ -38,13 +38,13 @@ class ClientForm(forms.ModelForm):
         model = Client
         fields = ('fullname', 'email', 'comment',)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         self.user = kwargs.pop('user')
         self.email = kwargs.pop('email')
 
         super().__init__(*args, **kwargs)
 
-    def clean_email(self):
+    def clean_email(self) -> str:
         cleaned_data = self.cleaned_data['email']
 
         if cleaned_data != self.email:
