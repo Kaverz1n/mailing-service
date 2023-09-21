@@ -1,13 +1,14 @@
-from typing import Any
-
 from blog.forms import ArticleForm
 from blog.models import Article
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.db.models import QuerySet
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
 from mailings.services import get_articles_from_cache
+
+from typing import Any
 
 
 class ArticleListView(ListView):
@@ -16,7 +17,7 @@ class ArticleListView(ListView):
     '''
     model = Article
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         return get_articles_from_cache()
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
