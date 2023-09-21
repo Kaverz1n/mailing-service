@@ -2,7 +2,9 @@ import datetime
 
 from django.db.models import Q
 
-from mailings.models import Mailing, MailingStatus, MailingLogs, MailingRegularity, Client
+from mailings.models import (
+    Mailing, MailingStatus, MailingLogs, MailingRegularity, Client
+)
 from mailings.services import send_email
 
 
