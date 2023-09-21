@@ -23,7 +23,7 @@ from users.forms import RegisterForm, ResetPasswordForm
 from users.models import User
 
 
-class UserRegisterView(CreateView):
+class UserRegisterView(UserPassesTestMixin, CreateView):
     '''
     Класс для регистрации пользователей
     '''
@@ -45,7 +45,7 @@ class UserRegisterView(CreateView):
 
             # отправка e-mail сообщения с ссылкой на активацию пользователя
             send_email(
-                'Подтверждение e-mail адресса!',
+                'Подтверждение e-mail адреса!',
                 f'Чтобы подтвердить Ваш e-mail адрес, перейдите по ссылке: http://127.0.0.1:8000{active_url}',
                 [self.object.email]
             )
@@ -58,8 +58,11 @@ class UserRegisterView(CreateView):
 
         return context_data
 
+    def test_func(self):
+        return self.request.user.is_anonymous
 
-class UserConfirmEmailView(View):
+
+class UserConfirmEmailView(UserPassesTestMixin, View):
     '''
     Класс для подтверждения e-mail адреса
     '''
@@ -77,13 +80,15 @@ class UserConfirmEmailView(View):
             user.is_active = True
             user.save()
 
-            login(request, user)
             return redirect('users:email_confirmed')
         else:
             return redirect('users:email_fail_confirm')
 
+    def test_func(self):
+        return self.request.user.is_anonymous
 
-class UserSentConfirmEmail(TemplateView):
+
+class UserSentConfirmEmail(UserPassesTestMixin, TemplateView):
     '''
     Класс для отображения шаблона с успешной отправкой письма
     '''
@@ -95,8 +100,11 @@ class UserSentConfirmEmail(TemplateView):
 
         return context_data
 
+    def test_func(self):
+        return self.request.user.is_anonymous
 
-class UserConfirmedEmail(TemplateView):
+
+class UserConfirmedEmail(UserPassesTestMixin, TemplateView):
     '''
     Класс для отображения шаблона о подтверждении e-mail адреса
     '''
@@ -108,8 +116,11 @@ class UserConfirmedEmail(TemplateView):
 
         return context_data
 
+    def test_func(self):
+        return self.request.user.is_anonymous
 
-class UserFailConfirmEmail(TemplateView):
+
+class UserFailConfirmEmail(UserPassesTestMixin, TemplateView):
     '''
     Класс для отображения шаблона об ошибке при подверждение e-mail адреса
     '''
@@ -121,8 +132,11 @@ class UserFailConfirmEmail(TemplateView):
 
         return context_data
 
+    def test_func(self):
+        return self.request.user.is_anonymous
 
-class UserLoginView(LoginView):
+
+class UserLoginView(UserPassesTestMixin, LoginView):
     '''
     Класс для авторизации пользователей
     '''
@@ -134,8 +148,11 @@ class UserLoginView(LoginView):
 
         return context_data
 
+    def test_func(self):
+        return self.request.user.is_anonymous
 
-class UserPasswordResetView(View):
+
+class UserPasswordResetView(UserPassesTestMixin, View):
     '''
     Класс для сброса пароля пользователя сервиса
     '''
@@ -165,8 +182,11 @@ class UserPasswordResetView(View):
 
         return render(request, 'users/password_reset_form.html', {'form': form, 'title': 'Сброс пароля'})
 
+    def test_func(self):
+        return self.request.user.is_anonymous
 
-class UserSentPassword(TemplateView):
+
+class UserSentPassword(UserPassesTestMixin, TemplateView):
     '''
     Класс для отображения шаблона об успешной отправки нового пароля
     '''
@@ -177,6 +197,9 @@ class UserSentPassword(TemplateView):
         context_data['title'] = 'Новый пароль отправлен'
 
         return context_data
+
+    def test_func(self):
+        return self.request.user.is_anonymous
 
 
 class UserListView(LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin, ListView):
