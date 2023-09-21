@@ -1,13 +1,16 @@
+from blog.models import Article
+
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import QuerySet
 
-from blog.models import Article
-from mailings.models import MailingStatus
+from mailings.models import MailingStatus, Mailing
+
+from users.models import User
 
 
-def send_email(title, body, users_email_list) -> None:
+def send_email(title: str, body: str, users_email_list: list[User]) -> None:
     '''
     Функция отправляет e-mail сообщение на указанную почту/ы
     :param title: имя сообщения
@@ -29,7 +32,7 @@ def send_email(title, body, users_email_list) -> None:
         )
 
 
-def check_user(user, current_user) -> bool:
+def check_user(user: User, current_user: User) -> bool:
     '''
     Функция проверяет, что пользователь объекта является
     текущим, чтобы видеть страницу объекта, иначе переходит на другую
@@ -41,7 +44,7 @@ def check_user(user, current_user) -> bool:
     return user == current_user
 
 
-def get_status_object(status_name) -> MailingStatus:
+def get_status_object(status_name: str) -> MailingStatus:
     '''
     Функция возвращает объект класса MailingStatus по переданному имени
     :param status_name: имя статуса
@@ -54,7 +57,7 @@ def get_status_object(status_name) -> MailingStatus:
         print(f'Ошибка - {e}')
 
 
-def check_mailing_status(mailing, status_name) -> bool:
+def check_mailing_status(mailing: Mailing, status_name: str) -> bool:
     '''
     Функция проверят, что статус рассылки равен переданому
     :param mailing: рассылка сервиса
