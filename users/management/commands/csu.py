@@ -7,7 +7,7 @@ class Command(BaseCommand):
     '''
     Команда для создания администратора сервиса
     '''
-    def handle(self, *args, **options):
+    def handle(self, *args, **options) -> None:
         try:
             user = User.objects.create(
                 email='admin@yandex.ru',
@@ -20,4 +20,4 @@ class Command(BaseCommand):
             user.set_password('admin')
             user.save()
         except:
-            print('Ошибка создания администратора!')
+            self.stderr.write('Ошибка создания администратора!')
