@@ -1,23 +1,25 @@
 import random
-from typing import Any
 
 from django.contrib.auth.mixins import (
     LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 )
-from django.db.models import QuerySet, Q
+from django.db.models import Q, QuerySet
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import (
-    TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
+    CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 )
+
+from typing import Any
+
 from pytils.translit import slugify
 
-from mailings.forms import MailingForm, ClientForm
-from mailings.models import Mailing, MailingStatus, Client, MailingLogs
+from mailings.forms import ClientForm, MailingForm
+from mailings.models import Client, Mailing, MailingLogs, MailingStatus
 from mailings.services import (
-    check_user, check_mailing_status, get_status_object, get_articles_from_cache
+    check_mailing_status, check_user, get_articles_from_cache, get_status_object
 )
 
 
@@ -60,8 +62,8 @@ class MailingListView(LoginRequiredMixin, UserPassesTestMixin, PermissionRequire
 
         return context
 
-    def test_func(self):
-        return not self.request.user.groups.filter(name='manager')
+    def test_func(self) -> bool:
+        return self.request.user.groups.filter(name='service_users')
 
 
 class MailingDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
@@ -168,7 +170,7 @@ class MailingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
 
         return super().dispatch(request, *args, **kwargs)
 
-    def get_success_url(self):
+    def get_success_url(self) -> str:
         group = self.request.user.groups.filter(name='manager')
 
         if group:
@@ -272,13 +274,13 @@ class ClientCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = 'mailings.add_client'
     success_url = reverse_lazy('mailings:client_list')
 
-    def get_form_kwargs(self):
+    def get_form_kwargs(self) -> dict[str, Any]:
         kwargs = super().get_form_kwargs()
         kwargs.update({'user': self.request.user, 'email': None})
 
         return kwargs
 
-    def form_valid(self, form):
+    def form_valid(self, form) -> HttpResponse:
         if form.is_valid():
             self.object = form.save()
             self.object.user = self.request.user
@@ -308,7 +310,7 @@ class ClientUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
 
         return super().dispatch(request, *args, **kwargs)
 
-    def get_form_kwargs(self):
+    def get_form_kwargs(self) -> dict[str, Any]:
         kwargs = super().get_form_kwargs()
         kwargs.update({'user': self.request.user, 'email': self.object.email})
 
