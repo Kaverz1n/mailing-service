@@ -234,6 +234,7 @@ class UserDetailView(LoginRequiredMixin, PermissionRequiredMixin, UserPassesTest
         context['total_mailings'] = len(Mailing.objects.filter(user=user))
         context['created_mailings'] = len(Mailing.objects.filter(user=user, status=get_status_object('создана')))
         context['running_mailings'] = len(Mailing.objects.filter(user=user, status=get_status_object('запущена')))
+        context['user'] = self.request.user
 
         return context
 
