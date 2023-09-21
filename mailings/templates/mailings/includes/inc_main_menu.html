@@ -24,7 +24,8 @@
                                     Клиенты
                                 </a>
                             </li>
-                        {% elif user|has_group:"manager" %}
+                        {% endif %}
+                        {% if user|has_group:"manager" %}
                             <li class="nav-item">
                                 <a class="nav-link active" aria-current="page" href="{% url 'users:user_list' %}">
                                     Пользователи
