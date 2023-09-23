@@ -1,4 +1,5 @@
 {% extends 'mailings/base.html' %}
+{% load custom_tags %}
 
 {% block content %}
 <div class="container">
@@ -9,12 +10,22 @@
             <p class="mb-3 fw-semibold lh-1 mt-3">Вы не сможете вновь её активировать...</p>
             <div class="row mt-1 mb-2">
                 <div class="col-1 ">
-                    <button type="submit" class="btn btn-danger">
-                            ПЕРЕВЕСТИ
-                    </button>
+                    {% if user|has_group:"manager" %}
+                        <button type="submit" class="btn btn-outline-dark">
+                                ПЕРЕВЕСТИ
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-danger">
+                                ПЕРЕВЕСТИ
+                        </button>
+                    {% endif %}
                 </div>
                 <div class="col-1 ms-2">
-                    <a class="btn btn-primary" href="{% url 'mailings:mailing_list' %}">НАЗАД</a>
+                    {% if user|has_group:"manager" %}
+                        <a class="btn btn-outline-dark" href="{% url 'mailings:manager_mailing_list' %}">НАЗАД</a>
+                    {% else %}
+                        <a class="btn btn-primary" href="{% url 'mailings:mailing_list' %}">НАЗАД</a>
+                    {% endif %}
                 </div>
             </div>
         </form>

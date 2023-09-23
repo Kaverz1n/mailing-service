@@ -2,19 +2,21 @@ import datetime
 
 from django.db.models import Q
 
-from mailings.models import Mailing, MailingStatus, MailingLogs, MailingRegularity, Client
+from mailings.models import (
+    Mailing, MailingStatus, MailingLogs, MailingRegularity, Client
+)
 from mailings.services import send_email
 
 
 def cron_send_email() -> None:
     '''
-    Функция отправляет e-mail рассылку всем пользователям в указанную
+    Функция отправляет e-mail рассылку всем клиентам пользователя в указанную
     дату с определенной часттой - раз в день, раз в неделю, раз в месяц
     или единоразово. При единоразовой отправке, статус рассылки меняется
-    на "завершенный". При первой отправке рассылки с указаной частотой,
+    на "завершена". При первой отправке рассылки с указаной частотой,
     рассылка переходит на статус "запущена". После каждой рассылки с
     указанной частотой, дата следующей отправки увеличивается на указанный
-    срок (день, 7 дней, 30 дней). После каждой рассылки, её логи сохраняются
+    срок (день, 7 дней, 30 дней). После каждой рассылки её логи сохраняются
     и помещаются в базу данных.
     '''
     now = datetime.datetime.now()
@@ -22,14 +24,14 @@ def cron_send_email() -> None:
         Q(status=MailingStatus.objects.get(name='создана')) |
         Q(status=MailingStatus.objects.get(name='запущена'))
     )
-    users_email_list = [str(client.email) for client in Client.objects.all()]
 
     # перебор всех рассылок со статусом "создана" или "запущена"
     for mailing in mailings:
         try:
             # отправка e-mail рассылки, если настоящее время больше установленного для отправки
             if mailing.sending_time.timestamp() < now.timestamp():
-                send_email(mailing.title, mailing.body, users_email_list)
+                clients_email_list = [str(client.email) for client in Client.objects.filter(user=mailing.user)]
+                send_email(mailing.title, mailing.body, clients_email_list)
                 MailingLogs.objects.create(mailing=mailing)
 
                 # изменение статуса рассылки на "запущена", если у нее имеется частота отправки
@@ -47,5 +49,5 @@ def cron_send_email() -> None:
                     mailing.status = MailingStatus.objects.get(name='завершена')
 
                 mailing.save()
-        except:
-            MailingLogs.objects.create(mailing=mailing, status=False, server_response='ERROR')
+        except Exception as e:
+            MailingLogs.objects.create(mailing=mailing, status=False, server_response=f'{e}')

@@ -1,4 +1,4 @@
-import re
+from datetime import datetime
 
 from django import forms
 
@@ -13,6 +13,20 @@ class MailingForm(forms.ModelForm):
     class Meta:
         model = Mailing
         fields = ('title', 'body', 'sending_time', 'regularity',)
+        widgets = {'sending_time': forms.DateTimeInput(attrs={'type': 'datetime-local'})}
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields['sending_time'].help_text = 'Рассылка должна быть опубликована не ранее, ' \
+                                                'чем через минуту от текущего времени.'
+
+    def clean_sending_time(self) -> datetime:
+        cleaned_data = self.cleaned_data['sending_time']
+
+        if cleaned_data.timestamp() <= datetime.now().timestamp():
+            raise forms.ValidationError('Рассылка должна иметь достоверное время')
+
+        return cleaned_data
 
 
 class ClientForm(forms.ModelForm):
@@ -24,10 +38,19 @@ class ClientForm(forms.ModelForm):
         model = Client
         fields = ('fullname', 'email', 'comment',)
 
+    def __init__(self, *args, **kwargs) -> None:
+        self.user = kwargs.pop('user')
+        self.email = kwargs.pop('email')
+
+        super().__init__(*args, **kwargs)
+
     def clean_email(self) -> str:
         cleaned_data = self.cleaned_data['email']
 
-        if not re.match(r'^[a-zA-Z0-9._]+@yandex\.ru$', cleaned_data):
-            raise forms.ValidationError('Пользователь должен иметь почтовый ящик yandex.ru!')
+        if cleaned_data != self.email:
+            is_existed = Client.objects.filter(email=cleaned_data, user=self.user).exists()
+
+            if is_existed:
+                raise forms.ValidationError('Пользователь с таким e-mail существует!')
 
         return cleaned_data

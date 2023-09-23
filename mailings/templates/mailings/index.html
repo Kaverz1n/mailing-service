@@ -1,51 +1,85 @@
 {% extends 'mailings/base.html' %}
+{% load custom_tags %}
+{% load cache %}
 
 {% block content %}
 <div class="container mt-5">
-    <div class="container-xxl bd-gutter mt-5">
-        <div class="col-md-8 mx-auto text-center">
-            <strong class="d-sm-inline-block p-2 me-2 mb-2 mb-lg-0 rounded-3 masthead-notice">САМЫЕ ЛУЧШИЕ
-                ПРОМОКОДЫ</strong>
-            <span class="text-body-secondary">KFC, Вкусно - и точка, Burger King и многое другое!</span>
-            <h1 class="mb-3 fw-semibold lh-1 mt-3">ПОЛУЧАЙ ПЕРВЫМ ПРОМОКОДЫ НА ТВОИ ЛЮБИМЫЕ РЕСТОРАНЫ</h1>
-            <p class="lead mb-4">
-                Открой врата к соблазнительным вкусам и эксклюзивным угощениям с нашей магической <b>рассылкой</b>!
-                Присоединяйся к нашей гастрономической аффинити и вперед, к безудержному веселью в мире фаст фуда.
-                Наши <b>рассылки</b> - это ключ к тайнам невероятных акций и промокодов, которые разбудят твои вкусовые
-                рецепторы. Будь в курсе последних трендов в мире вкусной быстроты и наслаждайся сочными бургерами,
-                аппетитными картофельными дольками и сладкими секретами, которые таинственно приоткроются только для
-                подписчиков нашей рассылки. Открой дверь к вкусовому райскому саду, где каждый грызунок приносит
-                удовольствие, а каждый ломтик - наслаждение. Получай наши рассылки и стань соучастником кулинарной
-                волшебной истории!
-            </p>
-            <a class="btn btn-dark btn-lg" href="">ПОЛУЧИТЬ ПРОМОКОДЫ</a>
+    {% cache 3600 "index-inf" %}
+        <div class="container-xxl bd-gutter mt-5">
+            <div class="col-md-8 mx-auto text-center">
+                <strong class="d-sm-inline-block p-2 me-2 mb-2 mb-lg-0 rounded-3 masthead-notice">САМЫЙ ЛУЧШИЙ
+                    СЕРВИС РАССЫЛОК</strong>
+                <span class="text-body-secondary">Просто, быстро, эффективно - наши рассылки!</span>
+                <h1 class="mb-3 fw-semibold lh-1 mt-3">ПОПРОБУЙТЕ SEND BAND ПРЯМО СЕЙЧАС!<hr></h1>
+                <p class="lead mb-4 text-center">
+                    Добро пожаловать в мир <b>SEND BAND</b>, где ваши сообщения становятся мелодией успеха!
+                </p>
+                <p class="lead mb-4 text-center">
+                    <b>SEND BAND</b> - это инструмент, который поможет вам донести ваше послание до аудитории точно в тот
+                    момент,
+                    когда это наиболее важно. С нами вы сможете создавать мощные рассылки e-mail сообщений с легкостью и
+                    эффективностью, которая приведет к результатам.
+                </p>
+                <p class="lead mb-4 text-center">
+                    С <b>SEND BAND</b>, ваше сообщение - это не просто слова, это мелодия, которая достигает сердец и ума
+                    ваших
+                    клиентов. Присоединяйтесь к нам, и давайте вместе создадим гармонию в вашей коммуникации!
+                </p>
+                <p class="lead mb-4 text-center">
+                    Ваши сообщения – наша гармония. <b>SEND BAND</b> – доставка с результатами!
+                </p>
+                <a class="btn btn-dark btn-lg" href="{% url 'mailings:mailing_list' %}">СОЗДАТЬ РАССЫЛКУ</a>
+            </div>
+        </div>
+    {% endcache %}
+    {% cache 3600 "index-about" %}
+        <h1 class="mt-5 text-center">ПОЧЕМУ ИМЕННО МЫ?</h1>
+    {% endcache %}
+    <div class="row mt-4">
+        <div class="col-4 text-center">
+            <p class="fs-5"><b>Всего рассылок:</b> {{ total_mailings }}</p>
+        </div>
+        <div class="col-4 text-center">
+            <p class="fs-5"><b>Активных рассылок:</b> {{ active_mailings }}</p>
+        </div>
+        <div class="col-4 text-center">
+            <p class="fs-5"><b>Уникальных клиентов:</b> {{ unique_clients }}</p>
         </div>
     </div>
-</div>
-<div class="container text-center mt-5 mb-5">
-    <h1 class="mt-5">ПОЧЕМУ ИМЕННО МЫ?</h1>
-    <div class="card bg-dark text-white mt-4">
-        <img class="card-img" src="/media/logo/cods.png" alt="Card image">
-        <div class="card-img-overlay mt-5">
-            <h1 class="card-title mt-5">ПРОМОКОД - ЛУЧШИЙ СПОСОБ СЭКОНОМИТЬ</h1>
-            <h5 class="card-text mt-5 p-3">Добро пожаловать в мир вкусных экономий! Промокоды - это волшебные ключи к
-                невероятным скидкам на ваш любимый фаст фуд. Представьте себе: вы заказываете свои любимые блюда -
-                сочные бургеры, ароматные картофельные лапшки, освежающие напитки - и при этом ваш кошелек остается
-                пульсирующим от радости, а не от пустоты!
-
-                Но это еще не все! Подписавшись на нашу умопомрачительную рассылку, вы становитесь волшебником скидок.
-                Только для вас мы будем разыгрывать эксклюзивные промокоды, которые дарят не только скидки, но и
-                приносят удовольствие от ощущения, что вы всегда в числе первых, кто узнает о горячих акциях и новинках.
-
-                Наши промокоды - это ключ к миру вкуса и доступной роскоши. Они позволят вам насладиться
-                гастрономическим разнообразием, не переживая за бюджет. А подписка на рассылку сделает вас членом клуба
-                истинных гурманов, которые знают толк в экономии без потери качества.
-
-                Не упустите шанс стать умным потребителем и наслаждаться каждым угощением по полной. Присоединяйтесь к
-                нашей рассылке, чтобы превратить свои обыденные обеды и ужины в настоящие кулинарные приключения с
-                экономией, о которой вы могли только мечтать!</h5>
-            <a class="btn btn-outline-light btn-lg" href="">ПОДПИСАТЬСЯ НА РАССЫЛКУ</a>
+    {% cache 3600 "index-img" %}
+        <div class="row mt-2">
+            <div class="col-12 text-center">
+                <img src="{{ 'logo/main.png'|mediapath }}" class="img-thumbnail">
+            </div>
         </div>
-    </div>
+    {% endcache %}
+    {% if blog_articles %}
+        <div class="row mt-2">
+            {% cache 3600 "index-blog" %}
+                <h1 class="mt-5 text-center">БЛОГ - ЛУЧШИЙ ИНФОРМАТОР</h1>
+            {% endcache %}
+            {% for object in blog_articles %}
+                <div class="col-12">
+                    <div class="card mb-3 mt-3" style="max-width: 1500px;">
+                        <div class="row g-0">
+                            <div class="col-md-3">
+                                <img src="{{ object.image|mediapath }}" class="img-fluid rounded-start p-2" alt="...">
+                            </div>
+                            <div class="col-9">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ object.title|upper }}</h5>
+                                    <p class="card-text">
+                                        {{ object.body|slice:"500" }}...
+                                        <a href="{% url 'blog:article_detail' object.pk %}">читать далее</a>
+                                    </p>
+                                    <p><b>Дата публикации: </b>{{ object.publish_date }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
