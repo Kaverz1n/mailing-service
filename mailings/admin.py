@@ -36,4 +36,4 @@ class MailingAdmin(admin.ModelAdmin):
 class MailingLogsAdmin(admin.ModelAdmin):
     list_display = ('mailing', 'attempt_datetime', 'status',)
     list_filter = ('status',)
-    ordering = ('pk',)
+    ordering = ('-attempt_datetime',)
